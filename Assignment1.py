@@ -24,6 +24,10 @@ def getKLargest(arr, k):
     return minHeap
     
 def computeKLargestStatistics1(arr, k):
+    n = len(arr)
+    if not 1 <= k <= n:
+        raise ValueError("k must satisfy 1 <= k <= n")
+    
     mean = 0
     median = 0
     mode = 0
@@ -104,12 +108,14 @@ def quickSelect(arr, low, high, idx):
     return quickSelect(arr, i + 1, high, idx)
 
 def computeKLargestStatistics2(arr, k):
+    n = len(arr)
+    if not 1 <= k <= n:
+        raise ValueError("k must satisfy 1 <= k <= n")
     mean = 0
     median = 0
     mode = 0
-    n = len(arr)
     
-    # find threhold to filter out k largest numbers 
+    # find threshold to filter out k largest numbers 
     # OR find the (n - k)th smallest number
     threshold = quickSelect(arr.copy(), 0, n - 1, n - k)
     
@@ -157,12 +163,16 @@ def computeKLargestStatistics2(arr, k):
 # MAIN CODE
 n = 25
 k = 7
-arr = [random.randint(0, 99) for _ in range(n)]
+
+# use round() to allow duplicate values
+arr = [round(random.uniform(0, 100), 2) for _ in range(n)]
 print(arr)
 
-# mean, median, mode = computeKLargestStatistics1(arr, k)
-mean, median, mode = computeKLargestStatistics2(arr, k)
-
-print('Mean =', mean)
-print('Median =', median)
-print('Mode =', mode)
+try:
+    # mean, median, mode = computeKLargestStatistics1(arr, k)
+    mean, median, mode = computeKLargestStatistics2(arr, k)
+    print('Mean =', mean)
+    print('Median =', median)
+    print('Mode =', mode) 
+except ValueError as e:
+    print(e)
