@@ -1,4 +1,28 @@
 import numpy as np
+import string
+
+"""
+ASSIGNMENT 5
+Application of Hashing in NLP
+
+Write Python program for the problem below.
+You are given a set of text documents and your goal is to find the most similar text document with respect to a query text. 
+The similarity is computed between two text documents, 𝑑𝑑1 and 𝑑𝑑2 as follows: 
+ similarity(d1, d2) = Σ_{w∈V} p(w|d1) * log(p(w|d1) / p(w|d2))
+
+Where V is the vocabulary (all the words except the stopwords), 𝑝(𝑤|𝑑) is the probability of the word w in d. 
+𝑝(𝑤|𝑑)=(number of times w appears in d + 1) / (total number of words in d + |𝑉|)
+Where |V| is the number of distinct words in the entire document collection.
+
+Your objective is to represent each document in a hash table/dictionary and when the query comes in, search for each 
+query word in each of the documents to find the probability. Finally compute the similarity score. 
+You may any other method more efficient than what is outlined above.
+The stopword list is given here: https://gist.github.com/sebleier/554280
+
+Input format: Your program will take the following input: 
+(i) file (where one line means one document) with the sentences, (ii) The query text.
+Output: It will print the most similar document (to the query) on screen.
+"""
 
 class DocumentQuerySelector:    
     def __init__(self):
@@ -16,9 +40,10 @@ class DocumentQuerySelector:
         Build the vocabulary of words from the given doc
         """
         voc = {}
+        doc = doc.lower()
+        doc = doc.translate(str.maketrans("", "", string.punctuation))  # remove punctuations
         words = doc.split()
         for word in words:
-            word = word.lower()
             if word in self.stopwords:
                 continue
             voc[word] = voc.get(word, 0) + 1
