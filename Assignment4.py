@@ -1,27 +1,23 @@
 """
 ASSIGNMENT 4
 
-You are given a text file with a set of sentences (one sentence in one line). Your
-goal is to produce dictionary of the following form generated from the file (one
-line for one word).
+You are given a text file with a set of sentences (one sentence in one line). Your goal is to 
+produce dictionary of the following form generated from the file (one line for one word).
 word, total count, number of lines with the word
 
-You must make sure the words are sorted based on descending order of total
-frequency. You need to use heap data structure to achieve this goal. In other
-words, you repeatedly insert words into a heap one by one. Once you finished
-reading the file, you need to produce the sorted list (descending order) of words
-based on word count.
+You must make sure the words are sorted based on descending order of total frequency. You need 
+to use heap data structure to achieve this goal. In other words, you repeatedly insert words 
+into a heap one by one. Once you finished reading the file, you need to produce the sorted list 
+(descending order) of words based on word count.
 
-When you are getting words from the lines, the word splitting must happen in
-any non-alphanumeric character. All words must be in lowercase.
-The data file is shared in the moodle.
+When you are getting words from the lines, the word splitting must happen in any non-alphanumeric 
+character. All words must be in lowercase. The data file is shared in the moodle.
 
 Input format: Your program will take the file with the sentences as the input.
 Output: It will produce output on screen.
 
-Important note: You must not use any inbuilt library such as python dictionary.
-If you use any other data structure that has higher time complexity than heap,
-you will get 50% credit.
+Important note: You must not use any inbuilt library such as python dictionary. If you use any other 
+data structure that has higher time complexity than heap, you will get 50% credit.
 """
 
 class MaxHeap:
@@ -96,14 +92,17 @@ class HashMap:
 
     def compute_hash(self, key):
         p = 31
-        mod = 1e9 + 7
+        mod = int(1e9 + 7)
         pow = 1
         hash_val = 0
         for ch in key:
-            char_val = ord(ch) - ord('a') + 1
+            if 'a' <= ch <= 'z':
+                char_val = ord(ch) - ord('a') + 1
+            else:  # digit
+                char_val = ord(ch) - ord('0') + 27
             hash_val = (hash_val + char_val * pow) % mod
             pow = (pow * p) % mod
-        return int(hash_val)
+        return hash_val
 
     def get_id(self, key):
         # calculate hash address
@@ -112,13 +111,21 @@ class HashMap:
 
     def contains_key(self, key):
         idx = self.get_id(key)
-        return len(self.map[idx]) > 0
+        start = idx
+        # Linear probing to search for the key
+        while len(self.map[idx]) > 0:
+            if self.map[idx][0] == key:
+                return True
+            idx = (idx + 1) % self.capacity
+            if idx == start:    # Full cycle completed
+                break
+        return False
 
     def put(self, key, count = 1, lines = 0):
         if self.n >= self.capacity:
             raise OverflowError('HashMap is full!')
         idx = self.get_id(key)
-        # use linear probing to handle collision
+        # Linear probing to handle collision
         while len(self.map[idx]) > 0:
             idx = (idx + 1) % self.capacity
         # insert in the empty slot
@@ -127,9 +134,15 @@ class HashMap:
 
     def get(self, key):
         idx = self.get_id(key)
-        if not self.contains_key(key):
-            raise KeyError('Key not found!')
-        return self.map[idx]
+        start = idx
+        # Linear probing to search for the key
+        while len(self.map[idx]) > 0:
+            if self.map[idx][0] == key:
+                return self.map[idx]
+            idx = (idx + 1) % self.capacity
+            if idx == start:    # Full cycle completed
+                break
+        raise KeyError('Key not found!')
 
     def increment(self, key, val_idx):
         """
@@ -138,10 +151,18 @@ class HashMap:
         """ 
         if val_idx != 1 and val_idx != 2:
             raise ValueError('val_idx must be 1 or 2!')
-        if not self.contains_key(key):
-            raise KeyError('Key not found!')
+        
         idx = self.get_id(key)
-        self.map[idx][val_idx] += 1
+        start = idx
+        # Linear probing to search for the key
+        while len(self.map[idx]) > 0:
+            if self.map[idx][0] == key:
+                self.map[idx][val_idx] += 1
+                return
+            idx = (idx + 1) % self.capacity
+            if idx == start:    # Full cycle completed
+                break
+        raise KeyError('Key not found!')
 
 
 class Solution:
@@ -206,7 +227,8 @@ if __name__ == '__main__':
     dictionary = Solution.build_dictionary('files/data-assgn-4.txt')
 
     print("DICTIONARY OF WORDS")
+    print(f"Index\t\tWord\t\tCount\t\tNo. of lines used")
     for i in range(len(dictionary)):
         word, count, lines = dictionary[i]
-        print(f"{i}\t\t Word: {word}\t\t Total count: {count}\t\t No. of lines with the word: {lines}")
+        print(f"{i}\t\t{word}\t\t{count}\t\t{lines}")
     print("\nNumber of unique words =", len(dictionary))
