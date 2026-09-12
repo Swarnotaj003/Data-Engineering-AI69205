@@ -1,19 +1,41 @@
-# Assignment-6
 import spacy
 import heapq
 import sys
 
+"""
+ASSIGNMENT 6
+
+In this assignment the goal is to find structurally similar sentences to a given sentence. A sentence (say s1) is 
+structurally similar to another sentence (say s2), if they both have the same named entities as well as have similar 
+parts of speech (POS) sequence present in them.
+
+Specifically, the similarity value between s1 and s2 is computed as below:
+Score (s1, s2) = 
+    (𝑁𝑢𝑚𝑏𝑒𝑟 𝑜𝑓 𝑐𝑜𝑚𝑚𝑜𝑛 𝑛𝑎𝑚𝑒𝑑 𝑒𝑛𝑡𝑖𝑡𝑦 𝑡𝑦𝑝𝑒𝑠 𝑏𝑒𝑡𝑤𝑒𝑒𝑛 𝑠1 𝑎𝑛𝑑 𝑠2) / (|𝑢𝑛𝑖𝑜𝑛 𝑜𝑓 𝑛𝑎𝑚𝑒𝑑 e𝑛𝑡𝑖𝑡𝑦 𝑡𝑦𝑝𝑒𝑠 𝑖𝑛 𝑠1 𝑎𝑛𝑑 𝑠2|) 
+    + POS score (s1, s2)
+    
+POS score (s1, s2) = sum of scores of all n-gram chunks (with overlap length n-2) between s1 and s2 based on their POS tags.
+
+Score of two POS tag chunks coming from s1 and s2 is the Jaccard similarity between the POS tags of s1 and s2.
+
+Use any tool (you may feel comfortable with) for named entity recognition and POS tags.
+Given a set of sentence and a query sentence, you need to return top 5 sentences structurally similar to the query sentence.
+Create your own sample data to test the model.
+
+Input data files (first file containing a set of sentences (call this database file), the second file containing a set of 
+query sentences) will be supplied from command line.
+The output should be printed on screen as space separated three column file, where the first column is the id/line no of the 
+query sentence and the second column is the id/line no of the sentence coming from the database file and third column is the 
+similarity score in descending order.
+"""
+
 class StructuralSimilarityQuery:
-    """
-    In this assignment the goal is to find structurally similar sentences to a given sentence. A
-    sentence (say s1) is structurally similar to another sentence (say s2), if they both have the
-    same named entities as well as have similar parts of speech (POS) sequence present in them.
-    """
     def __init__(self):
         """
         Load the spaCy English language model
         """
         self.nlp = spacy.load("en_core_web_sm")
+        self.sentence_cache = dict()    # sentence -> (named entities set, POS tags list)
 
     def read_file(self, filename):
         """
@@ -29,27 +51,22 @@ class StructuralSimilarityQuery:
                     sentences.append((index, sentence))
         return sentences
 
-    def get_named_entities(self, sentence):
+    def analyze_sentence(self, sentence):
         """
-        Extracts named entity types from the given sentence.
-        Uses `spaCy's Named Entity Recognition (NER)`.
+        Extracts named entity types and POS tags from the given sentence using spaCy
         """
+        if sentence in self.sentence_cache:
+            return self.sentence_cache[sentence]
+
         doc = self.nlp(sentence)
         entities = set()
-        for ent in doc.ents:
-            entities.add(ent.label_)
-        return entities
-
-    def get_pos_tags(self, sentence):
-        """
-        Extracts the Part-of-Speech (POS) tags from a sentence.
-        Uses `spaCy's POS tagger` to assign a POS tag to each token in the given sentence.
-        """
-        doc = self.nlp(sentence)
         pos_tags = []
         for token in doc:
             pos_tags.append(token.pos_)
-        return pos_tags
+        for ent in doc.ents:
+            entities.add(ent.label_)
+        self.sentence_cache[sentence] = (entities, pos_tags)
+        return entities, pos_tags
 
     def create_ngrams(self, pos_tags, n=3):
         """
@@ -87,11 +104,14 @@ class StructuralSimilarityQuery:
         """
         chunks1 = self.create_ngrams(pos1, n)
         chunks2 = self.create_ngrams(pos2, n)
+        chunk_sets1 = [set(chunk) for chunk in chunks1]
+        chunk_sets2 = [set(chunk) for chunk in chunks2]
         pos_score = 0.0
 
-        # compare each pair of corresponding chunks
-        for chunk1, chunk2 in zip(chunks1, chunks2):
-            pos_score += self.calculate_jaccard_similarity(set(chunk1), set(chunk2))
+        # compare every pair of chunks
+        for chunk1 in chunk_sets1:
+            for chunk2 in chunk_sets2:
+                pos_score += self.calculate_jaccard_similarity(chunk1, chunk2)
         return pos_score
 
     def calculate_similarity(self, sentence1, sentence2):
@@ -99,14 +119,10 @@ class StructuralSimilarityQuery:
         Calculate structural similarity between two sentences
         `similarity` = `named_entity_score` + `pos_score`
         """
-        entities1 = self.get_named_entities(sentence1)
-        entities2 = self.get_named_entities(sentence2)
+        entities1, pos1 = self.analyze_sentence(sentence1)
+        entities2, pos2 = self.analyze_sentence(sentence2)
         named_entity_score = self.calculate_jaccard_similarity(entities1, entities2)
-
-        pos1 = self.get_pos_tags(sentence1)
-        pos2 = self.get_pos_tags(sentence2)
         pos_score = self.calculate_pos_score(pos1, pos2)
-
         return named_entity_score + pos_score
 
     def find_top_k_similar(self, query_sentence, database, k=5):
