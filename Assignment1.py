@@ -1,12 +1,14 @@
 import random
 from queue import PriorityQueue
 
-# ASSIGNMENT 1
-# Write python program for the following problems. 
-# Given an array of real numbers, find out the mean, median and the mode of the largest k elements from the array.  
-# You must not sort the array to do this, as sorting takes unnecessarily longer time. 
-# You generate the array of numbers randomly in your code. 
+"""
+ASSIGNMENT 1
 
+Write python program for the following problems. 
+Given an array of real numbers, find out the mean, median and the mode of the largest k elements from the array.  
+You must not sort the array to do this, as sorting takes unnecessarily longer time. 
+You generate the array of numbers randomly in your code. 
+"""
 
 # APPROACH 1
 # Use min heap to store k largest elements. 
