@@ -121,17 +121,24 @@ class HashMap:
                 break
         return False
 
-    def put(self, key, count = 1, lines = 0):
-        if self.n >= self.capacity:
-            raise OverflowError('HashMap is full!')
+    def put(self, key, count=1, lines=0):
         idx = self.get_id(key)
-        # Linear probing to handle collision
+        start = idx
+
+        # Search for existing key using linear probing
         while len(self.map[idx]) > 0:
+            if self.map[idx][0] == key:
+                self.map[idx][1] = count
+                self.map[idx][2] = lines
+                return
             idx = (idx + 1) % self.capacity
-        # insert in the empty slot
+            if idx == start:
+                raise OverflowError('HashMap is full!')
+
+        # Insert new key
         self.map[idx] = [key, count, lines]
         self.n += 1
-
+    
     def get(self, key):
         idx = self.get_id(key)
         start = idx
