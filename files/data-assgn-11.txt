@@ -1,0 +1,23 @@
+8 9
+CS101
+MA101
+CS102
+MA201
+CS201
+CS202
+CS301
+CS302
+CS101 CS102
+MA101 MA201
+CS102 CS201
+MA201 CS201
+CS102 CS202
+CS201 CS301
+CS202 CS301
+CS201 CS302
+MA101 CS302
+
+Expected output for the above input data: 
+
+One of the valid orders: CS101 MA101 CS102 MA201 CS201 CS202 CS301 CS302
+No contradictory rules present in the above data. 

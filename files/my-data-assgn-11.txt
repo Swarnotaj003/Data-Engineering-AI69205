@@ -1,0 +1,26 @@
+7 10
+PHY
+CHEM
+BIO
+MATH
+ENG
+HIN
+PhEd
+MATH PHY
+MATH CHEM
+CHEM PHY
+PHY BIO
+BIO CHEM
+BIO PhEd
+PhEd PhEd
+ENG PhEd
+ENG HIN
+HIN ENG
+
+Expected output for the above input data: 
+
+One of the valid orders: None
+Courses with contradicting prerequisites:
+Cycle 1: PhEd -> PhEd
+Cycle 2: PHY -> BIO -> CHEM -> PHY
+Cycle 3: ENG -> HIN -> ENG
